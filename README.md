@@ -27,3 +27,5 @@ User-friendly interface.
 
 Contributing:
 Feel free to contribute to this project by submitting pull requests. Please follow the code style guidelines and add unit tests for any new features or bug fixes.
+
+*for full comprehension of guide open up READ ME file
