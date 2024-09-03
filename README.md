@@ -17,6 +17,7 @@ One-file mode: To create a single executable file instead of a directory, use th
 
 Freezing dependencies: To embed all dependencies within the executable, use the --noconsole option:
    pyinstaller --noconsole Zadintuvas.py
+* My preffered method of installing.
 
 Features:
 
@@ -28,4 +29,4 @@ User-friendly interface.
 Contributing:
 Feel free to contribute to this project by submitting pull requests. Please follow the code style guidelines and add unit tests for any new features or bug fixes.
 
-*for full comprehension of guide open up READ ME file
+* For full comprehension of guide open up READ ME file.
