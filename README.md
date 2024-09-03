@@ -9,19 +9,16 @@ Clone the repository:
 
 Bash
 git clone https://github.com/MsairoxLT/alarm-clock
-Kodą naudokite atsargiai.
 
 Install dependencies:
 
 Bash
 pip install -r requirements.txt
-Kodą naudokite atsargiai.
 
 Run the application:
 
 Bash
 python alarm_clock.py
-Kodą naudokite atsargiai.
 
 Features:
 
