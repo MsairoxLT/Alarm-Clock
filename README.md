@@ -8,14 +8,14 @@ git clone https://github.com/MsairoxLT/alarm-clock
 
 Install dependencies:
    pip install pyinstaller
- Run PyInstaller: Use the following command to create the executable:
+Run PyInstaller: Use the following command to create the executable:
    pyinstaller Zadintuvas.py
- PyInstaller will create a directory named dist containing the executable and any necessary dependencies.
+PyInstaller will create a directory named dist containing the executable and any necessary dependencies.
 
- One-file mode: To create a single executable file instead of a directory, use the --onefile option:
+One-file mode: To create a single executable file instead of a directory, use the --onefile option:
    pyinstaller --onefile Zadintuvas.py
 
- Freezing dependencies: To embed all dependencies within the executable, use the --noconsole option:
+Freezing dependencies: To embed all dependencies within the executable, use the --noconsole option:
    pyinstaller --noconsole Zadintuvas.py
 
 Features:
