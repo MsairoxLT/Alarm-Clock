@@ -6,128 +6,138 @@ import os
 import random
 from threading import Thread
 
-root = Tk()
-root.geometry("510x600")
 
-pygame.mixer.init()
+class AlarmClock:
+    def __init__(self, root):
+        self.root = root
+        self.root.geometry("510x600")
 
-alarm_running = False
-selected_folder = None
-alarms = []
-snooze_duration = 5
+        pygame.mixer.init()
 
-folder_label = Label(root, text="", font=("Helvetica 10"), anchor="w", justify=LEFT)
-folder_label.pack(side=BOTTOM, fill=X, padx=10, pady=5)
+        self.alarm_running = False
+        self.selected_folder = None
+        self.alarms = []
+        self.snooze_duration = 5
 
-alarm_time_label = Label(root, text="", font=("Helvetica 12 bold"), fg="blue")
-alarm_time_label.pack(pady=5)
+        self.folder_label = Label(self.root, text="", font=("Helvetica 10"), anchor="w", justify=LEFT)
+        self.folder_label.pack(side=BOTTOM, fill=X, padx=10, pady=5)
 
-alarms_frame = Frame(root)
-alarms_frame.pack(pady=5)
+        self.alarm_time_label = Label(self.root, text="", font=("Helvetica 12 bold"), fg="blue")
+        self.alarm_time_label.pack(pady=5)
 
-def threading():
-    global alarm_running
-    alarm_running = True
-    Thread(target=alarm).start()
+        self.alarms_frame = Frame(self.root)
+        self.alarms_frame.pack(pady=5)
 
-def alarm():
-    while alarm_running:
-        current_time = datetime.datetime.now().strftime("%H:%M:%S")
-        current_day = datetime.datetime.now().strftime("%A")
-        for alarm_time, days in alarms:
-            if (not days or current_day in days) and current_time == alarm_time:
-                if selected_folder:
-                    play_random_song(selected_folder)
-                alarm_time_label.config(text="")
-                snooze_button.pack(pady=5)
-                return
+        self.snooze_button = Button(self.root, text="Snooze", command=self.snooze_alarm)
+        self.stop_button = Button(self.root, text="Stop Alarm", command=self.stop_alarm)
 
-def stop_alarm():
-    global alarm_running
-    alarm_running = False
-    pygame.mixer.music.stop()
-    alarm_time_label.config(text="")
-    snooze_button.pack_forget()
+        self.setup_ui()
 
-def snooze_alarm():
-    global alarm_running
-    alarm_running = False
-    pygame.mixer.music.stop()
-    snooze_button.pack_forget()
-    snooze_time = datetime.datetime.now() + datetime.timedelta(minutes=snooze_duration)
-    alarms.append((snooze_time.strftime("%H:%M:%S"), [datetime.datetime.now().strftime("%A")]))
-    threading()
+    def setup_ui(self):
+        Label(self.root, text="Alarm Clock", font=("Helvetica 20 bold"), fg="red").pack(pady=10)
+        Label(self.root, text="Set Time", font=("Helvetica 15 bold")).pack()
 
-def select_folder():
-    global selected_folder
-    selected_folder = filedialog.askdirectory()
-    folder_label.config(text=f"Selected folder: {selected_folder}")
+        frame = Frame(self.root)
+        frame.pack()
 
-def play_random_song(folder):
-    files = [file for file in os.listdir(folder) if file.endswith(('.mp3', '.wav'))]
-    if files:
-        pygame.mixer.music.load(os.path.join(folder, random.choice(files)))
-        pygame.mixer.music.play()
+        self.hour = StringVar(self.root)
+        self.minute = StringVar(self.root)
+        self.second = StringVar(self.root)
+        hours = [f"{i:02d}" for i in range(24)]
+        minutes = seconds = [f"{i:02d}" for i in range(60)]
+        self.hour.set(hours[0])
+        self.minute.set(minutes[0])
+        self.second.set(seconds[0])
 
-def set_alarm():
-    set_alarm_time = f"{hour.get()}:{minute.get()}:{second.get()}"
-    selected_days = [day for day, var in day_vars.items() if var.get() == 1]
-    alarms.append((set_alarm_time, selected_days))
-    alarm_time_label.config(text=f"Alarm set for: {set_alarm_time} on {', '.join(selected_days) if selected_days else 'every day'}")
-    update_alarms_label()
-    threading()
+        OptionMenu(frame, self.hour, *hours).pack(side=LEFT)
+        OptionMenu(frame, self.minute, *minutes).pack(side=LEFT)
+        OptionMenu(frame, self.second, *seconds).pack(side=LEFT)
 
-def delete_alarm(index):
-    del alarms[index]
-    update_alarms_label()
+        day_frame = Frame(self.root)
+        day_frame.pack(pady=10)
 
-def update_alarms_label():
-    for widget in alarms_frame.winfo_children():
-        widget.destroy()
-    for index, (time, days) in enumerate(alarms):
-        alarm_text = f"{time} on {', '.join(days) if days else 'every day'}"
-        Label(alarms_frame, text=alarm_text, font=("Helvetica 10")).pack(side=LEFT)
-        Button(alarms_frame, text="Delete", command=lambda i=index: delete_alarm(i)).pack(side=LEFT)
+        self.day_vars = {day: IntVar() for day in
+                         ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]}
+        for day, var in self.day_vars.items():
+            Checkbutton(day_frame, text=day, variable=var).pack(side=LEFT)
 
-def set_snooze_duration():
-    global snooze_duration
-    snooze_duration = int(snooze_entry.get())
+        Button(self.root, text="Set Alarm", font=("Helvetica 15"), command=self.set_alarm).pack(pady=5)
+        Button(self.root, text="Select Folder", font=("Helvetica 15"), command=self.select_folder).pack(pady=5)
 
-Label(root, text="Alarm Clock", font=("Helvetica 20 bold"), fg="red").pack(pady=10)
-Label(root, text="Set Time", font=("Helvetica 15 bold")).pack()
+        self.snooze_entry = Entry(self.root)
+        self.snooze_entry.pack(pady=5)
+        Button(self.root, text="Set Snooze Duration", font=("Helvetica 15"), command=self.set_snooze_duration).pack(
+            pady=5)
 
-frame = Frame(root)
-frame.pack()
+    def threading(self):
+        self.alarm_running = True
+        Thread(target=self.alarm).start()
 
-hour = StringVar(root)
-minute = StringVar(root)
-second = StringVar(root)
-hours = [f"{i:02d}" for i in range(24)]
-minutes = seconds = [f"{i:02d}" for i in range(60)]
-hour.set(hours[0])
-minute.set(minutes[0])
-second.set(seconds[0])
+    def alarm(self):
+        while self.alarm_running:
+            current_time = datetime.datetime.now().strftime("%H:%M:%S")
+            current_day = datetime.datetime.now().strftime("%A")
+            for alarm_time, days in self.alarms:
+                if (not days or current_day in days) and current_time == alarm_time:
+                    if self.selected_folder:
+                        self.play_random_song(self.selected_folder)
+                    self.alarm_time_label.config(text="")
+                    self.snooze_button.pack(pady=5)
+                    self.stop_button.pack(pady=5)
+                    return
 
-OptionMenu(frame, hour, *hours).pack(side=LEFT)
-OptionMenu(frame, minute, *minutes).pack(side=LEFT)
-OptionMenu(frame, second, *seconds).pack(side=LEFT)
+    def stop_alarm(self):
+        self.alarm_running = False
+        pygame.mixer.music.stop()
+        self.alarm_time_label.config(text="")
+        self.snooze_button.pack_forget()
+        self.stop_button.pack_forget()
 
-day_frame = Frame(root)
-day_frame.pack(pady=10)
+    def snooze_alarm(self):
+        self.alarm_running = False
+        pygame.mixer.music.stop()
+        self.snooze_button.pack_forget()
+        self.stop_button.pack_forget()
+        snooze_time = datetime.datetime.now() + datetime.timedelta(minutes=self.snooze_duration)
+        self.alarms.append((snooze_time.strftime("%H:%M:%S"), [datetime.datetime.now().strftime("%A")]))
+        self.threading()
 
-day_vars = {day: IntVar() for day in ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]}
-for day, var in day_vars.items():
-    Checkbutton(day_frame, text=day, variable=var).pack(side=LEFT)
+    def select_folder(self):
+        self.selected_folder = filedialog.askdirectory()
+        self.folder_label.config(text=f"Selected folder: {self.selected_folder}")
 
-Button(root, text="Set Alarm", font=("Helvetica 15"), command=set_alarm).pack(pady=5)
-Button(root, text="Stop Alarm", font=("Helvetica 15"), command=stop_alarm).pack(pady=5)
-Button(root, text="Select Folder", font=("Helvetica 15"), command=select_folder).pack(pady=5)
+    def play_random_song(self, folder):
+        files = [file for file in os.listdir(folder) if file.endswith(('.mp3', '.wav'))]
+        if files:
+            pygame.mixer.music.load(os.path.join(folder, random.choice(files)))
+            pygame.mixer.music.play()
 
-Label(root, text="Set Snooze Duration (5 minutes is standart)", font=("Helvetica 12")).pack(pady=5)
-snooze_entry = Entry(root, font=("Helvetica 12"))
-snooze_entry.pack(pady=5)
-Button(root, text="Set Snooze Duration", font=("Helvetica 12"), command=set_snooze_duration).pack(pady=5)
+    def set_alarm(self):
+        set_alarm_time = f"{self.hour.get()}:{self.minute.get()}:{self.second.get()}"
+        selected_days = [day for day, var in self.day_vars.items() if var.get() == 1]
+        self.alarms.append((set_alarm_time, selected_days))
+        self.alarm_time_label.config(
+            text=f"Alarm set for: {set_alarm_time} on {', '.join(selected_days) if selected_days else 'every day'}")
+        self.update_alarms_label()
+        self.threading()
 
-snooze_button = Button(root, text="Snooze", font=("Helvetica 15"), command=snooze_alarm)
+    def delete_alarm(self, index):
+        del self.alarms[index]
+        self.update_alarms_label()
 
-root.mainloop()
+    def update_alarms_label(self):
+        for widget in self.alarms_frame.winfo_children():
+            widget.destroy()
+        for index, (time, days) in enumerate(self.alarms):
+            alarm_text = f"{time} on {', '.join(days) if days else 'every day'}"
+            Label(self.alarms_frame, text=alarm_text, font=("Helvetica 10")).pack(side=LEFT)
+            Button(self.alarms_frame, text="Delete", command=lambda i=index: self.delete_alarm(i)).pack(side=LEFT)
+
+    def set_snooze_duration(self):
+        self.snooze_duration = int(self.snooze_entry.get())
+
+
+if __name__ == "__main__":
+    root = Tk()
+    app = AlarmClock(root)
+    root.mainloop()
