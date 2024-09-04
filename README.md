@@ -14,10 +14,11 @@ PyInstaller will create a directory named dist containing the executable and any
 
 One-file mode: To create a single executable file instead of a directory, use the --onefile option:
    pyinstaller --onefile Zadintuvas.py
-
+* My preffered method of installing.
+* 
 Freezing dependencies: To embed all dependencies within the executable, use the --noconsole option:
    pyinstaller --noconsole Zadintuvas.py
-* My preffered method of installing.
+
 
 Features:
 
